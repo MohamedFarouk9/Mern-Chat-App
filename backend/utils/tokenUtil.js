@@ -94,4 +94,97 @@ export const generateResetToken = (userId) => {
         logger.error('Failed to generate reset token', error);
         throw new Error('Reset token generation failed');
     }
+};
+
+
+/**
+ * Verify JWT Token
+ * Checks if token is valid and not expired
+ * @param {string} token - Token to verify
+ * @returns {object} Decoded token payload { userId, email, type, iat, exp }
+ * @throws {Error} If token is invalid or expired
+ */
+
+export const verifyToken = (token) => {
+    try {
+        const decoded = jwt.verify(token , JWT_SECRET);
+        logger.debug('Token Verfied', { userId: decoded.userId});
+        return decoded;
+    } catch (error) {
+        if(error.name === 'TokenExpiredError') {
+            logger.warn('Token expired', { message: error.message });
+            throw new Error('Token has expired');
+        } else if (error.name === 'JsonWebTokenError') {
+            logger.warn('Invalid token', { message: error.message });
+            throw new Error('Invalid token');
+        } else {
+            logger.error('Token verification error', error);
+            throw error;
+        }
+    }
+};
+
+
+/**
+ * Extract token from Authorization header
+ * Expected format: "Bearer <token>"
+ * @param {string} authHeader - Authorization header value
+ * @returns {string|null} Token or null if invalid format
+ */
+export const extractTokenFromHeader = (authHeader) => {
+    if (!authHeader){
+        return null;
+    }
+    const parts = authHeader.split(' ');
+
+    // Validate header format
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        logger.warn('Invalid Authorization header format', { authHeader });
+        return null;
+    }
+    return parts[1];
 }
+
+
+/**
+ * Decode token without verification
+ * ⚠️ SECURITY WARNING: Only for debugging/logging
+ * Do NOT use for authentication decisions
+ * @param {string} token - Token to decode
+ * @returns {object|null} Decoded payload or null if invalid
+ */
+
+export const decodeToken = (token) => {
+    try {
+        return jwt.decode(token);
+    } catch (error) {
+        logger.error('Failed to decode token', error);
+        return null;
+    }
+}
+
+/**
+ * Get token expiry time in seconds
+ * @param {string} token - JWT token
+ * @returns {number} Seconds until expiry
+ */
+export const getTokenExpiry = (token) => {
+    try {
+        const decoded = jwt.decode(token);
+        if (!decoded || !decoded.exp) return null;
+
+        const expiryTime = decoded.exp * 1000; //Convert to milliseconds
+        const now = Date.now();
+        return Math.round((expiryTime - now) / 1000); // Return seconds until expiry
+    } catch (error) {
+        return null;
+    }
+};
+
+
+// Client → POST /login
+// Server → validates user
+// Server → creates JWT
+// Client → stores JWT
+// Client → sends JWT with every request
+// Server → verifies JWT
