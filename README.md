@@ -2182,7 +2182,25 @@ LOGGING
 
 ✅ Pull Request Process
    1. Create feature branch: git checkout -b feature/description
-   2. Make changes & commit
+   2. Make changes & commit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
    3. Push to GitHub: git push origin feature/description
    4. Create Pull Request on GitHub
    5. Code review by team members
