@@ -34,6 +34,7 @@ export const ERROR_MESSAGES = {
   SERVER_ERROR: "An error occurred on the server. Please try again.",
   EMAIL_NOT_VERIFIED: "Please verify your email before logging in",
   INVALID_GOOGLE_TOKEN: "Invalid Google token",
+  PASSWORDS_DO_NOT_MATCH: "New password and confirm password do not match",
   FILE_TOO_LARGE: "File size must be less than 5MB",
 };
 
@@ -42,7 +43,9 @@ export const SUCCESS_MESSAGES = {
     REGISTRATION_SUCCESS: "Registration successful! Please check your email to verify your account.",
     EMAIL_VERIFIED: "Email verified successfully! You can now log in.",
     LOGIN_SUCCESS: "Login successful! Welcome back.",
+    RESEND_VERIFICATION_SUCCESS: "Verification email resent! Please check your inbox.",
     LOGOUT_SUCCESS: "You have been logged out successfully.",
+    EMAIL_ALREADY_VERIFIED: "Email is already verified. You can log in.",
     PASSWORD_RESET_EMAIL_SENT: "Password reset email sent! Please check your inbox.",
     PASSWORD_RESET_SUCCESS: "Password has been reset successfully! You can now log in with your new password.",
 }

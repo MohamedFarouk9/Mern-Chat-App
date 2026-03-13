@@ -137,3 +137,121 @@ export const verifyEmail = async (req, res, next) => {
     next(error);
   }
 };
+
+/* --------------------------------------------------------------------------
+   resend verification (optional auth)
+   ------------------------------------------------------------------------- */
+export const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json({ success: false, message: ERROR_MESSAGES.USER_NOT_FOUND });
+    }
+    if (user.emailVerified) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: true,
+        message: SUCCESS_MESSAGES.EMAIL_ALREADY_VERIFIED,
+      });
+    }
+
+    const token = generateVerificationToken(user._id);
+    await sendVerificationEmail(user.email, token);
+    return res.json({
+      success: true,
+      message: SUCCESS_MESSAGES.RESEND_VERIFICATION_SUCCESS,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* --------------------------------------------------------------------------
+   forgot/reset password
+   - forgot: generate reset token, send email
+   - reset: verify token, update password
+   ------------------------------------------------------------------------- */
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      // respond success anyway to avoid enumeration
+      return res.json({
+        success: true, // don't reveal user existence
+        message: SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
+      });
+    }
+
+    const token = generateResetToken(user._id);
+    await sendResetEmail(user.email, token);
+    return res.json({
+      success: true,
+      message: SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword, confirmPassword } = req.body;
+    if (newPassword != confirmPassword) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: ERROR_MESSAGES.PASSWORDS_DO_NOT_MATCH,
+      });
+    }
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.userId).select("+password");
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: ERROR_MESSAGES.USER_NOT_FOUND,
+      });
+    }
+    user.password = newPassword; // will be hashed by pre-save hook
+    await user.save();
+    return res.json({
+      success: true,
+      message: SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* --------------------------------------------------------------------------
+   Google OAuth
+   - optional: verify token with Google API
+   - find or create user, issue access token
+   ------------------------------------------------------------------------- */
+export const googleOAuth = async (req, res, next) => {
+  try {
+    const { googleToken } = req.body;
+    // Optional: verify token with Google API here
+    const payload = verifyGoogleToken(googleToken); // implement this function to call Google API
+
+    let user = await User.findOne({ email: payload.email });
+    if (!user) {
+      user = await User.create({
+        email: payload.email,
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+        username: payload.email.split("@")[0], // simple username from email
+        provider: "google",
+        providerId: payload.sub, // Google's unique user ID
+        emailVerified: true, // Google accounts are already verified
+      });
+    }
+
+    const token = generateAccessToken(user._id, user.email);
+    return res.json({ success: true, token });
+  } catch (error) {
+    next(error);
+  }
+};
