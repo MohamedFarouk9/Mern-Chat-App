@@ -198,7 +198,9 @@ export const respondToFriendRequest = async (req, res, next) => {
         user.friends.push(notification.senderId);
         await user.save({ session });
 
-        const sender = await User.findById(notification.senderId).session(session);
+        const sender = await User.findById(notification.senderId).session(
+          session,
+        );
         sender.friends.push(user._id);
         await sender.save({ session });
 
@@ -249,17 +251,10 @@ export const blockUser = async (req, res, next) => {
 export const unblockUser = async (req, res, next) => {
   try {
     const { userId } = req.params; // user to unblock
-    const user = await User.findById(req.user.userId);  // get current user
-    // check if user is actually blocked
-    if (!user.blockedUsers.includes(userId)) {
-      return res
-        .status(HTTP_STATUS.BAD_REQUEST)
-        .json({ success: false, message: "User not blocked" });
-    }
-    user.blockedUsers = user.blockedUsers.filter(
-      (id) => id.toString() !== userId,  
-    );
-    await user.save();
+   
+    await User.findByIdAndUpdate(req.user.userId, {
+      $pull: { blockedUsers: userId },
+    });
 
     return res.json({ success: true, message: "User unblocked successfully" });
   } catch (error) {
