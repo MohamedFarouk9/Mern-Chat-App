@@ -195,12 +195,14 @@ export const respondToFriendRequest = async (req, res, next) => {
       const session = await User.startSession();
       session.startTransaction();
       try {
+        // senderid is the one who sent the request, so we add them to current user's friends list
         user.friends.push(notification.senderId);
         await user.save({ session });
 
         const sender = await User.findById(notification.senderId).session(
           session,
         );
+        // we also add current user to sender's friends list
         sender.friends.push(user._id);
         await sender.save({ session });
 
