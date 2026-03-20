@@ -181,8 +181,8 @@ messageSchema.methods.addReaction = function (userId, emoji) {
     (r) => r.userId.toString() === userId.toString() && r.emoji === emoji,
   );
 
-  if (!existingReaction) {
-    return Promise.resolve(); // No duplicate reactions Already reacted
+  if (existingReaction) {
+    return Promise.resolve(); // No duplicate reactions Already reacted == continue without adding again
   }
 
   this.reactions.push({ userId, emoji });
@@ -192,7 +192,7 @@ messageSchema.methods.addReaction = function (userId, emoji) {
 // Method: Remove emoji reaction
 messageSchema.methods.removeReaction = function (userId, emoji) {
   this.reactions = this.reactions.filter(
-    (r) => !(r.userId.toString() === userId.toString() && r.emoji === emoji),
+    (r) => !(r.userId.toString() === userId.toString() && r.emoji === emoji), // Remove the reaction from the array
   );
   return this.save();
 };
