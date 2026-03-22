@@ -191,20 +191,21 @@ export const respondToFriendRequest = async (req, res, next) => {
           .json({ success: false, message: "Already friends" });
       }
 
-      // use transaction for atomicity
       const session = await User.startSession();
       session.startTransaction();
       try {
-        // senderid is the one who sent the request, so we add them to current user's friends list
         user.friends.push(notification.senderId);
         await user.save({ session });
 
         const sender = await User.findById(notification.senderId).session(
           session,
         );
-        // we also add current user to sender's friends list
         sender.friends.push(user._id);
         await sender.save({ session });
+
+        // mark notification as read
+        notification.isRead = true;
+        await notification.save();
 
         await session.commitTransaction();
       } catch (error) {
@@ -214,9 +215,6 @@ export const respondToFriendRequest = async (req, res, next) => {
         session.endSession();
       }
     }
-    // mark notification as read
-    notification.isRead = true;
-    await notification.save();
 
     return res.json({ success: true, message: `Friend request ${action}ed` });
   } catch (error) {
@@ -253,7 +251,7 @@ export const blockUser = async (req, res, next) => {
 export const unblockUser = async (req, res, next) => {
   try {
     const { userId } = req.params; // user to unblock
-   
+
     await User.findByIdAndUpdate(req.user.userId, {
       $pull: { blockedUsers: userId },
     });
