@@ -29,6 +29,7 @@ export const initSocket = (server) => {
       }
 
       const decoded = verifyToken(token);
+      //No need to send userId from frontend anymore. We can get it from the token and trust it since it's signed by our server.
       socket.userId = decoded.userId; // Attach userId to socket for later use
       logger.info("Socket authenticated", {
         userId: decoded.userId,
@@ -59,7 +60,7 @@ export const initSocket = (server) => {
       lastSeen: new Date(),
     });
 
-    // Broadcast user online status
+    // Broadcast user online status  [emit() (The Sender)]
     io.emit(SOCKET_EVENTS.USER_STATUS_CHANGED, {
       userId: socket.userId,
       status: "online",
@@ -69,10 +70,11 @@ export const initSocket = (server) => {
        Message Events
        -------------------------------------------------------------------------- */
 
-    // Send message
+    // Send message   socket.on() (The Listener)
     socket.on(SOCKET_EVENTS.MESSAGE_SEND, async (data) => {
       try {
-        const { receiverId, content, messageType, imageUrl, conversationId } = data;
+        const { receiverId, content, messageType, imageUrl, conversationId } =
+          data;
 
         logger.info("Message sent", { senderId: socket.userId, receiverId });
 
@@ -87,7 +89,8 @@ export const initSocket = (server) => {
               imageUrl,
               conversationId,
               timestamp: new Date(),
-            });
+            },
+          );
         }
       } catch (error) {
         logger.error("Error sending message", error);
@@ -96,14 +99,130 @@ export const initSocket = (server) => {
 
     // Message delivered
     socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED, (data) => {
-        const { senderId, messageId } = data;
-        if (onlineUsers.has(senderId)) {
-            io.to(onlineUsers.get(senderId)).emit(SOCKET_EVENTS.MESSAGE_DELIVERED, {
-                messageId,
-            });
-        }
+      const { senderId, messageId } = data;
+      if (onlineUsers.has(senderId)) {
+        //io.to() (The Targeter) private message. It finds the specific socket ID for the sender and emits
+        //the MESSAGE_DELIVERED event back to that socket, along with the messageId.
+        //This allows the sender's client to update the message status to "delivered" in real-time.
+        io.to(onlineUsers.get(senderId)).emit(SOCKET_EVENTS.MESSAGE_DELIVERED, {
+          messageId,
+        });
+      }
     });
 
-    
+    // Message read
+    socket.on(SOCKET_EVENTS.MESSAGE_READ, (data) => {
+      const { senderId, messageId, conversationId } = data;
+      if (onlineUsers.has(senderId)) {
+        io.to(onlineUsers.get(senderId)).emit(SOCKET_EVENTS.MESSAGE_READ, {
+          messageId,
+          conversationId,
+        });
+      }
+    });
+
+    /* --------------------------------------------------------------------------
+       Typing Indicators
+       -------------------------------------------------------------------------- */
+
+    socket.on(SOCKET_EVENTS.USER_TYPING, (data) => {
+      const { conversationId, receiverId } = data;
+
+      // Emit typing event to the other user in the conversation
+      if (typingUsers.has(conversationId)) {
+        typingUsers.set(conversationId, []);
+      }
+
+      // Add user to typing list for the conversation
+      if (!typingUsers.get(conversationId).includes(socket.userId)) {
+        typingUsers.get(conversationId).push(socket.userId);
+      }
+
+      // Notify receiver that user is typing
+      if (onlineUsers.has(receiverId)) {
+        io.to(onlineUsers.get(receiverId)).emit(SOCKET_EVENTS.USER_TYPING, {
+          userId: socket.userId,
+          conversationId,
+        });
+      }
+
+      logger.info("User typing", { userId: socket.userId, conversationId });
+    });
+
+    socket.on(SOCKET_EVENTS.USER_STOPPED_TYPING, (data) => {
+      const { conversationId, receiverId } = data;
+
+      if (typingUsers.has(conversationId)) {
+        typingUsers.set(
+          conversationId,
+          typingUsers.get(conversationId).filter((id) => id !== socket.userId),
+        );
+      }
+
+      // Notify receiver
+      if (onlineUsers.has(receiverId)) {
+        io.to(onlineUsers.get(receiverId)).emit(
+          SOCKET_EVENTS.USER_STOPPED_TYPING,
+          {
+            userId: socket.userId,
+            conversationId,
+          },
+        );
+      }
+    });
+
+    /* --------------------------------------------------------------------------
+       Notification Events
+       -------------------------------------------------------------------------- */
+    socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, (notification) => {
+      // Emit to self (for UI updates)
+      socket.emit(SOCKET_EVENTS.NOTIFICATION_NEW, notification);
+    });
+
+    socket.on(SOCKET_EVENTS.NOTIFICATION_READ, (data) => {
+      const { notificationId } = data;
+      socket.emit(SOCKET_EVENTS.NOTIFICATION_READ, { notificationId });
+    });
+
+    /* --------------------------------------------------------------------------
+       Disconnect Event
+       -------------------------------------------------------------------------- */
+
+    socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
+      logger.info("User disconnected", { userId: socket.userId });
+
+      // Remove from online users
+      onlineUsers.delete(socket.userId);
+
+      // Update user status in DB
+      await User.findByIdAndUpdate(socket.userId, {
+        status: "offline",
+        lastSeen: new Date(),
+      });
+
+      // Broadcast user offline status
+      io.emit(SOCKET_EVENTS.USER_STATUS_CHANGED, {
+        userId: socket.userId,
+        status: "offline",
+      });
+
+      // Clean up typing state
+      typingUsers.forEach((users, conversationId) => {
+        const filtered = users.filter((id) => id !== socket.userId);
+        if (filtered.length === 0) {
+          typingUsers.delete(conversationId);
+        } else {
+          typingUsers.set(conversationId, filtered);
+        }
+      });
+    });
   });
+
+  return io;
+};
+
+export const emitToUser = (io, userId, event, data) => {
+  if (onlineUsers.has(userId)) {
+    io.to(onlineUsers.get(userId)).emit(event, data);
+  }
 };
