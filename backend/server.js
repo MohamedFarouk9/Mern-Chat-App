@@ -3,9 +3,14 @@ import http from "http";
 import cors from "cors";
 import rateLimiter from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-
-import connectDB from "./config/db";
+import connectDB from "./config/db.js";
 import logger from "./utils/logger.js";
+import { initSocket } from "./socket/index.js";
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/user.js";
+import messageRoutes from "./routes/message.js";
+import notificationRoutes from "./routes/notification.js";
+import friendRoutes from "./routes/friend.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -15,9 +20,7 @@ await connectDB();
 
 // Middleware
 app.use(cors());
-// increase payload limit for profile images (up to 10MB, adjust as needed)
 app.use(express.json({ limit: "10mb" }));
-// for parsing application/x-www-form-urlencoded data (e.g., from forms)
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(rateLimiter.general);
 
@@ -26,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/notification", notificationRoutes);
+app.use("/api/friend", friendRoutes);
 
 // health check
 app.get("/api/health", (req, res) => {
@@ -35,10 +39,11 @@ app.get("/api/health", (req, res) => {
 // Error handling
 app.use(errorHandler);
 
-const io = initSocket(server); // Initialize Socket.IO
-app.set("io", io); // make io accessible in routes/controllers via req.app.get('io')
+// Initialize Socket.IO
+const io = initSocket(server);
+app.set("io", io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
