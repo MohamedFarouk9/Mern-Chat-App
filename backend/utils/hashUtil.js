@@ -3,6 +3,7 @@
 // Passwords are never stored in plaintext
 
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import logger from "./logger.js";
 
 const SALT_ROUNDS = 10; // Security vs performance tradeoff (10-12 is recommended)
@@ -27,7 +28,7 @@ export const hashPassword = async (password) => {
     }
 
     //hash with bcryptjs (async operation)
-    const salt = await bcrypt.getSalt(SALT_ROUNDS);
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     logger.debug("Password hashed successfully");
@@ -61,6 +62,9 @@ export const comparePassword = async (plainPassword, hashedPassword) => {
     throw new Error("Password comparison failed");
   }
 };
+
+// Alias for consistency with controller imports
+export const comparePasswords = comparePassword;
 
 /**
  * Generate random token string

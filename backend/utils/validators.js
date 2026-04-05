@@ -155,6 +155,50 @@ export const searchUsersSchema = Joi.object({
 }).strict();
 
 /**
+ * Reset password validation schema
+ */
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().required().messages({
+    "any.required": "Token is required",
+  }),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .required()
+    .pattern(patterns.password)
+    .messages({
+      "string.pattern.base":
+        "Password must contain uppercase, lowercase, number, and special character (@$!%*?&)",
+      "string.min": "Password must be at least 8 characters",
+      "string.max": "Password must not exceed 128 characters",
+      "any.required": "Password is required",
+    }),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
+    "any.only": "Passwords do not match",
+    "any.required": "Confirm Password is required",
+  }),
+}).strict();
+
+/**
+ * Forgot password validation schema
+ */
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().required().lowercase().messages({
+    "any.required": "Email is required",
+    "string.email": "Please provide a valid email",
+  }),
+}).strict();
+
+/**
+ * Upload profile image validation
+ */
+export const uploadProfileImageSchema = Joi.object({
+  firstName: Joi.string().max(50).optional(),
+  lastName: Joi.string().max(50).optional(),
+  bio: Joi.string().max(500).optional(),
+}).strict();
+
+/**
  * Generic validation function
  * @param {object} data - Data to validate
  * @param {object} schema - Joi schema to validate against
