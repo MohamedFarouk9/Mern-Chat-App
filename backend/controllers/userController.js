@@ -1,6 +1,6 @@
-import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants";
-import User from "../models/User";
-import Notification from "../models/Notification";
+import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants.js";
+import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 
 /* --------------------------------------------------------------------------
    get profile (own or another user's public profile)

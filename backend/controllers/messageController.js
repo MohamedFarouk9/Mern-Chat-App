@@ -1,6 +1,6 @@
-import { HTTP_STATUS } from "../config/constants";
-import Conversation from "../models/Conversation";
-import Message from "../models/Message";
+import { HTTP_STATUS } from "../config/constants.js";
+import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
 
 /* --------------------------------------------------------------------------
    get user conversations

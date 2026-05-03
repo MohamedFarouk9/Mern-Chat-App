@@ -1,8 +1,8 @@
 import { Server } from "socket.io";
-import { verifyToken } from "../utils/tokenUtil";
-import User from "../models/User";
-import { SOCKET_EVENTS } from "../config/constants";
-import logger from "../utils/logger";
+import { verifyToken } from "../utils/tokenUtil.js";
+import User from "../models/User.js";
+import { SOCKET_EVENTS } from "../config/constants.js";
+import logger from "../utils/logger.js";
 
 // Track online users: { userId: socketId }
 const onlineUsers = new Map();

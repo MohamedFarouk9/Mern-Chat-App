@@ -4,8 +4,8 @@
    - outgoing optional: (requests user sent)
    ------------------------------------------------------------------------- */
 
-import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants";
-import User from "../models/User";
+import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants.js";
+import User from "../models/User.js";
 
 export const getPendingRequests = async (req, res, next) => {
   try {

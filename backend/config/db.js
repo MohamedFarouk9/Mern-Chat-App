@@ -15,15 +15,15 @@ const connectDB = async () => {
     }
 
     try {
-        const {MOMGO_URI , NODE_ENV} = process.env;
+        const {MONGO_URI , NODE_ENV} = process.env;
 
-        if(!MOMGO_URI) {
-            throw new Error("MOMGO_URI is not defined in environment variables");
+        if(!MONGO_URI) {
+            throw new Error("MONGO_URI is not defined in environment variables");
         }
 
         logger.info(`Connecting to MongoDB in ${NODE_ENV} mode...`);
 
-        const conn = await mongoose.connect(MOMGO_URI, {
+        const conn = await mongoose.connect(MONGO_URI, {
             dbName: 'myDatabase', // specify your database name
         });
 

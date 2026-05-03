@@ -2,7 +2,7 @@
 // Centralized request validation schemas
 // Prevents invalid data from entering the system
 
-import Joi, { optional } from "joi";
+import Joi from "joi";
 
 const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -128,7 +128,7 @@ export const sendMessageSchema = Joi.object({
     .valid("text", "image", "emoji", "file")
     .default("text"),
 
-  imageUrl: Joi.string().url().optional(),
+  imageUrl: Joi.string().uri().optional(),
 }).strict();
 
 /**

@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware } from "../middleware/authMiddleware";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 import {
   addReaction,
   deleteMessage,
@@ -9,8 +9,8 @@ import {
   markAsRead,
   removeReaction,
   sendMessage,
-} from "../controllers/messageController";
-import { validateSendMessage } from "../middleware/validator";
+} from "../controllers/messageController.js";
+import { validateSendMessage } from "../middleware/validator.js";
 
 const router = express.Router();
 

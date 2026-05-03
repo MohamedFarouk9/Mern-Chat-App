@@ -2,7 +2,9 @@
 // Prevents brute force attacks on sensitive endpoints
 // Limits requests from same IP within time window
 
-import { RATE_LIMIT } from "../config/constants";
+import rateLimit from "express-rate-limit";
+import { RATE_LIMIT } from "../config/constants.js";
+import logger from "../utils/logger.js";
 
 
 
@@ -37,17 +39,28 @@ export const authLimiter = rateLimit({
 
 /**
  * General endpoints rate limiter
- * 100 requests per 15 minutes per IP
+ * 100 requests per 1 minute per IP
  */
 
 export const generalLimiter = rateLimit({
     windowMs: RATE_LIMIT.GENERAL_LIMIT.windowMs, // 1 minute
-    max: RATE_LIMIT.GENERAL_LIMIT.max, // 100 requests 
+    max: RATE_LIMIT.GENERAL_LIMIT.max, // 100 requests
     message: RATE_LIMIT.GENERAL_LIMIT.message,
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => {
         return process.env.NODE_ENV === "test";
+    },
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress;
+    },
+    handler: (req, res) => {
+        logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+        res.status(429).json({
+            success: false,
+            message: RATE_LIMIT.GENERAL_LIMIT.message,
+            retryAfter: req.rateLimit.resetTime,
+        });
     },
 });
 
@@ -62,3 +75,5 @@ export const messageLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+
+export default { authLimiter, generalLimiter, messageLimiter };

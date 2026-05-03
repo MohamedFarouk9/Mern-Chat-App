@@ -2,9 +2,9 @@
 // Verifies JWT token on protected routes
 // Attaches user info to request object for controllers to use
 
-import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants";
-import logger from "../utils/logger";
-import { extractTokenFromHeader, verifyToken } from "../utils/tokenUtil";
+import { ERROR_MESSAGES, HTTP_STATUS } from "../config/constants.js";
+import logger from "../utils/logger.js";
+import { extractTokenFromHeader, verifyToken } from "../utils/tokenUtil.js";
 
 /**
  * Middleware: Verify JWT token

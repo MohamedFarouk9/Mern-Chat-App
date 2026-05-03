@@ -3,8 +3,8 @@
 // Formats error responses consistently
 // Must be registered LAST in middleware stack
 
-import { HTTP_STATUS } from "../config/constants";
-import logger from "../utils/logger";
+import { HTTP_STATUS } from "../config/constants.js";
+import logger from "../utils/logger.js";
 
 /**
  * Custom AppError class for consistent error handling

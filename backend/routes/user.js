@@ -12,8 +12,8 @@ import {
 
 // all routes require auth
 
-import { authMiddleware } from "../middleware/authMiddleware";
-import { validateSearchUser, validateUpdateProfile } from "../middleware/validator";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { validateSearchUsers, validateUpdateProfile } from "../middleware/validator.js";
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.get('/profile', getProfile);
 router.put('/profile',validateUpdateProfile, updateProfile);
 
 // search & friends
-router.get('/search', validateSearchUser, searchUsers);
+router.get('/search', validateSearchUsers, searchUsers);
 router.get('/friends', getFriends);
 
 // friend requests

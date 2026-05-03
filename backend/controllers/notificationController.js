@@ -1,5 +1,5 @@
-import { HTTP_STATUS } from "../config/constants";
-import Notification from "../models/Notification";
+import { HTTP_STATUS } from "../config/constants.js";
+import Notification from "../models/Notification.js";
 
 /* --------------------------------------------------------------------------
    get notifications for user

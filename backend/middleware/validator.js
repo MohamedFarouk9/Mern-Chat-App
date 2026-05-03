@@ -5,6 +5,16 @@
 import { validate } from '../utils/validators.js';
 import { HTTP_STATUS } from '../config/constants.js';
 import logger from '../utils/logger.js';
+import {
+  registrationSchema,
+  loginSchema,
+  googleAuthSchema,
+  emailVerificationSchema,
+  emailVerificationMockSchema,
+  sendMessageSchema,
+  searchUsersSchema,
+  updateProfileSchema
+} from '../utils/validators.js';
 
 /**
  * Generic validation middleware factory
@@ -52,7 +62,7 @@ export const validateRequest = (schema, source = 'body') => {
 /**
  * Validation middleware for registration
  */
-export const validateRegister = validateRequest(registerSchema, 'body');
+export const validateRegister = validateRequest(registrationSchema, 'body');
 
 /**
  * Validation middleware for login
@@ -88,7 +98,7 @@ export const validateSendMessage = validateRequest(sendMessageSchema, 'body');
 /**
  * Validation middleware for user search
  */
-export const validateSearchUser = validateRequest(searchUserSchema, 'query');
+export const validateSearchUsers = validateRequest(searchUsersSchema, 'query');
 
 /**
  * Validation middleware for profile update

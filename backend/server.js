@@ -1,4 +1,5 @@
 import express from "express";
+import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 import rateLimiter from "./middleware/rateLimiter.js";
@@ -11,6 +12,9 @@ import userRoutes from "./routes/user.js";
 import messageRoutes from "./routes/message.js";
 import notificationRoutes from "./routes/notification.js";
 import friendRoutes from "./routes/friend.js";
+
+// Load environment variables FIRST before any other code
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);

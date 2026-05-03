@@ -3,7 +3,7 @@
 // Handles access tokens, verification tokens, and reset tokens
 
 import jwt from "jsonwebtoken";
-import logger from "./logger";
+import logger from "./logger.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRY = "15m"; // Access tokens expire in 15 minutes

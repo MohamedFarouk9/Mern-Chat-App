@@ -2,7 +2,7 @@
 // Controls which domains can access the API
 // Prevents requests from unauthorized origins
 
-import logger from "../utils/logger";
+import logger from "../utils/logger.js";
 
 /**
  * CORS Configuration

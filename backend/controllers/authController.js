@@ -10,6 +10,8 @@ import {
   generateResetToken,
   verifyToken,
 } from "../utils/tokenUtil.js";
+import { comparePasswords } from "../utils/hashUtil.js";
+import { sendVerificationEmail, sendResetEmail } from "../services/emailService.js";
 
 /* --------------------------------------------------------------------------
    registration
@@ -20,21 +22,27 @@ import {
 
 export const register = async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, username, password, firstName, lastName } = req.body;
 
     // check unique constraints
-    const existingUser =
-      (await User.findByEmailOrUsername(email)) ||
-      (await User.findByEmailOrUsername(username));
+    const existingEmail = await User.findOne({ email });
+    const existingUsername = await User.findOne({ username });
 
-    if (existingUser) {
+    if (existingEmail) {
       return res
         .status(HTTP_STATUS.CONFLICT)
         .json({ success: false, message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
     }
 
-    const user = new User.create({
+    if (existingUsername) {
+      return res
+        .status(HTTP_STATUS.CONFLICT)
+        .json({ success: false, message: ERROR_MESSAGES.USERNAME_ALREADY_EXISTS });
+    }
+
+    const user = await User.create({
       email,
+      username,
       password,
       firstName,
       lastName,
@@ -230,7 +238,7 @@ export const resetPassword = async (req, res, next) => {
    - optional: verify token with Google API
    - find or create user, issue access token
    ------------------------------------------------------------------------- */
-export const googleOAuth = async (req, res, next) => {
+export const googleAuth = async (req, res, next) => {
   try {
     const { googleToken } = req.body;
     // Optional: verify token with Google API here

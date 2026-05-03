@@ -3,7 +3,9 @@
 // Includes password hashing pre-hook
 
 import mongoose from "mongoose";
-import { USER_STATUSES, VALIDATION_RULES } from "../config/constants";
+import { USER_STATUSES, VALIDATION_RULES } from "../config/constants.js";
+import { hashPassword } from "../utils/hashUtil.js";
+import logger from "../utils/logger.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -157,7 +159,7 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-userSchema.virtuals("fullName").get(function () {
+userSchema.virtual("fullName").get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
@@ -238,3 +240,18 @@ userSchema.statics.findActiveUsers = function () {
 const User = mongoose.model('User', userSchema);
 
 export default User;
+
+
+
+
+// | Feature       | `methods`         | `statics`          | `virtual`       |
+// | ------------- | ----------------- | ------------------ | --------------- |
+// | Attached to   | Document          | Model              | Document        |
+// | Call style    | `user.method()`   | `User.method()`    | `user.prop`     |
+// | Use case      | Logic per user    | Queries / DB logic | Computed values |
+// | Has access to | document (`this`) | model (`this`)     | document        |
+
+
+// methods → "what THIS user can do"
+// statics → "what USERS collection can do"
+// virtual → "what THIS user looks like"
