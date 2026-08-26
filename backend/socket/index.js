@@ -129,7 +129,7 @@ export const initSocket = (server) => {
       const { conversationId, receiverId } = data;
 
       // Emit typing event to the other user in the conversation
-      if (typingUsers.has(conversationId)) {
+      if (!typingUsers.has(conversationId)) {
         typingUsers.set(conversationId, []);
       }
 

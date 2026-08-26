@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import logger from "./logger.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const ACCESS_TOKEN_EXPIRY = "15m"; // Access tokens expire in 15 minutes
+const ACCESS_TOKEN_EXPIRY = "7d"; // Access tokens expire in 7 days
 const VERIFICATION_TOKEN_EXPIRY = "1d"; // Verification tokens expire in 1 day
 const RESET_TOKEN_EXPIRY = "1h"; // Reset tokens expire in 1 hour
 

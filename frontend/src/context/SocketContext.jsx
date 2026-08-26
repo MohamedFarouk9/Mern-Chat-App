@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { io } from 'socket.io-client';
 import { useAuth } from "./AuthContext"; // Import your auth context to get the token
 

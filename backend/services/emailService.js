@@ -1,6 +1,8 @@
 import nodemailer from "nodemailer";
 
-const { EMAIL_USER, EMAIL_PASSWORD, EMAIL_MODE, EMAIL_URL } = process.env;
+import logger from "../utils/logger.js";
+
+const { EMAIL_USER, EMAIL_PASSWORD, EMAIL_MODE, FRONTEND_URL } = process.env;
 
 let transporter;
 if (EMAIL_MODE === "real") {
@@ -86,7 +88,7 @@ export const sendNotificationEmail = async (email, notifications) => {
       subject: "You have new notifications",
       html: `
         <h2>You have a new notification</h2>
-        <p>${notification.message || "Check your chat app for details."}</p>
+        <p>${notifications.message || "Check your chat app for details."}</p>
       `,
     };
     await transporter.sendMail(mailOptions);

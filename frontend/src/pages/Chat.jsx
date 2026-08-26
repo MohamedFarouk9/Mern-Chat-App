@@ -190,13 +190,13 @@ export const Chat = () => {
                                 <div
                                     key={msg._id}
                                     className={`flex ${
-                                        msg.senderId === user?._id ? 'justify-end' : 'justify-start'
+                                        msg.senderId._id === user?._id ? 'justify-end' : 'justify-start'
                                     }`}
                                 >
                                     {/* Message bubble: blue if you sent it, gray if received */}
                                     <div
                                         className={`max-w-xs px-4 py-2 rounded-lg ${
-                                            msg.senderId === user?._id
+                                            msg.senderId._id === user?._id
                                                 ? 'bg-blue-500 text-white'
                                                 : 'bg-gray-300 text-black'
                                             }`}

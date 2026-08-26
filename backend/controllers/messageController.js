@@ -72,7 +72,7 @@ export const sendMessage = async (req, res, next) => {
       receiverId,
     );
 
-    const message = await message.create({
+    const message = await Message.create({
       senderId,
       receiverId,
       conversationId: conversation._id,

@@ -129,6 +129,8 @@ export const sendMessageSchema = Joi.object({
     .default("text"),
 
   imageUrl: Joi.string().uri().optional(),
+
+  conversationId: Joi.string().optional(),
 }).strict();
 
 /**
@@ -216,6 +218,8 @@ export const validate = (data, schema) => {
       message: detail.message,
     }));
 
-    return { error: null, value };
+    return { error: details, value };
   }
+
+  return { error: null, value };
 };
