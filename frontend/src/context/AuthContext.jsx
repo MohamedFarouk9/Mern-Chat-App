@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 
 const AuthContext = createContext();
 
@@ -13,26 +13,29 @@ export const AuthProvider = ({ children  }) => {
     if (storedToken) {
       setToken(storedToken);
       verifyToken(storedToken);
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const verifyToken = async (tok) => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-        headers: { Authorization: `Bearer ${tok}` },
-      });
+      // The interceptor will automatically attach the token, but since we are verifying it,
+      // it's already in localStorage.
+      const res = await api.get('/api/user/profile');
       setUser(res.data.profile);
     } catch (error) {
       console.error('Token verification failed');
       localStorage.removeItem('token');
       setToken(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (email, password, confirmPassword, firstName, lastName, username) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+      const res = await api.post('/api/auth/register', {
         email,
         password,
         confirmPassword,
@@ -48,16 +51,15 @@ export const AuthProvider = ({ children  }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      const res = await api.post('/api/auth/login', {
         email,
         password,
       });
       const { token: newToken } = res.data;
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      const profileRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-        headers: { Authorization: `Bearer ${newToken}` },
-      });
+      
+      const profileRes = await api.get('/api/user/profile');
       setUser(profileRes.data.profile);
       return { success: true };
     } catch (error) {
